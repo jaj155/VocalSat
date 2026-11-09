@@ -14,9 +14,17 @@ jobs:
         with:
           submodules: recursive
       - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 2>&1 | Tee-Object -FilePath configure.log
       - name: Build VST3
-        run: cmake --build build --config Release --target VocalSat_VST3
+        run: cmake --build build --config Release --target VocalSat_VST3 2>&1 | Tee-Object -FilePath build.log
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs
+          path: |
+            configure.log
+            build.log
       - name: Build Standalone
         run: cmake --build build --config Release --target VocalSat_Standalone
       - uses: actions/upload-artifact@v4
@@ -33,7 +41,13 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
       - name: Build VST3
-        run: cmake --build build --config Release --target VocalSat_VST3
+        run: cmake --build build --config Release --target VocalSat_VST3 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-logs
+          path: build.log
       - name: Build Standalone
         run: cmake --build build --config Release --target VocalSat_Standalone
       - uses: actions/upload-artifact@v4
@@ -53,11 +67,17 @@ jobs:
           sudo apt-get install -y cmake libasound2-dev libfreetype6-dev \
             libgl1-mesa-dev libx11-dev libxcomposite-dev libxcursor-dev \
             libxext-dev libxinerama-dev libxrandr-dev \
-            libwebkit2gtk-4.1-dev libwebkitgtk-6.0-dev
+            libwebkit2gtk-4.1-dev
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build VST3
-        run: cmake --build build --target VocalSat_VST3
+        run: cmake --build build --target VocalSat_VST3 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-logs
+          path: build.log
       - name: Build Standalone
         run: cmake --build build --target VocalSat_Standalone
       - uses: actions/upload-artifact@v4
