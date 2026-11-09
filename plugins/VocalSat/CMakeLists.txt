@@ -4,10 +4,13 @@
 
 if(WIN32)
     set(PLUGIN_FORMATS VST3 Standalone)
+    set(NEEDS_WEBVIEW2 TRUE)
 elseif(APPLE)
     set(PLUGIN_FORMATS VST3 Standalone)
+    set(NEEDS_WEBVIEW2 FALSE)
 elseif(UNIX)
     set(PLUGIN_FORMATS VST3 Standalone)
+    set(NEEDS_WEBVIEW2 FALSE)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -23,7 +26,7 @@ juce_add_plugin(VocalSat
     PLUGIN_CODE VcSt
     FORMATS ${PLUGIN_FORMATS}
     PRODUCT_NAME "VocalSat"
-    NEEDS_WEBVIEW2 TRUE
+    NEEDS_WEBVIEW2 ${NEEDS_WEBVIEW2}
     VST3_CATEGORIES Fx
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
