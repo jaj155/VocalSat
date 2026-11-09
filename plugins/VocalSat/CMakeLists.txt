@@ -18,8 +18,8 @@ message(STATUS "VocalSat: Building for ${PLUGIN_FORMATS}")
 # PLUGIN DEFINITION
 # ============================================
 juce_add_plugin(VocalSat
-    COMPANY_NAME "Noizefield"
-    PLUGIN_MANUFACTURER_CODE Noiz
+    COMPANY_NAME "Jaj"
+    PLUGIN_MANUFACTURER_CODE JajC
     PLUGIN_CODE VcSt
     FORMATS ${PLUGIN_FORMATS}
     PRODUCT_NAME "VocalSat"
