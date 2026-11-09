@@ -9,13 +9,13 @@ on:
       plugin_name:
         description: 'Plugin name to build'
         required: true
+        default: 'VocalSat'
       platforms:
         description: 'Platforms to build (windows,macos,linux,all)'
         default: 'all'
 
 jobs:
   build-windows:
-    if: github.event.inputs.platforms == 'all' || contains(github.event.inputs.platforms, 'windows') || github.event_name == 'push'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,16 +25,15 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
       - name: Build VST3
-        run: cmake --build build --config Release --target ${{ inputs.plugin_name || 'VocalSat' }}_VST3
+        run: cmake --build build --config Release --target ${{ inputs.plugin_name }}_VST3
       - name: Build Standalone
-        run: cmake --build build --config Release --target ${{ inputs.plugin_name || 'VocalSat' }}_Standalone
+        run: cmake --build build --config Release --target ${{ inputs.plugin_name }}_Standalone
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-${{ inputs.plugin_name || 'VocalSat' }}
+          name: windows-${{ inputs.plugin_name }}
           path: build/*_artefacts/Release/*
 
   build-macos:
-    if: github.event.inputs.platforms == 'all' || contains(github.event.inputs.platforms, 'macos') || github.event_name == 'push'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,18 +41,16 @@ jobs:
           submodules: recursive
       - name: Configure
         run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
-      - name: Build All
-        run: |
-          cmake --build build --config Release --target ${{ inputs.plugin_name || 'VocalSat' }}_VST3
-          cmake --build build --config Release --target ${{ inputs.plugin_name || 'VocalSat' }}_AU
-          cmake --build build --config Release --target ${{ inputs.plugin_name || 'VocalSat' }}_Standalone
+      - name: Build VST3
+        run: cmake --build build --config Release --target ${{ inputs.plugin_name }}_VST3
+      - name: Build Standalone
+        run: cmake --build build --config Release --target ${{ inputs.plugin_name }}_Standalone
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ inputs.plugin_name || 'VocalSat' }}
+          name: macos-${{ inputs.plugin_name }}
           path: build/*_artefacts/Release/*
 
   build-linux:
-    if: github.event.inputs.platforms == 'all' || contains(github.event.inputs.platforms, 'linux') || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,12 +64,11 @@ jobs:
             libxext-dev libxinerama-dev libxrandr-dev libwebkit2gtk-4.0-dev
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build All
-        run: |
-          cmake --build build --target ${{ inputs.plugin_name || 'VocalSat' }}_VST3
-          cmake --build build --target ${{ inputs.plugin_name || 'VocalSat' }}_LV2
-          cmake --build build --target ${{ inputs.plugin_name || 'VocalSat' }}_Standalone
+      - name: Build VST3
+        run: cmake --build build --target ${{ inputs.plugin_name }}_VST3
+      - name: Build Standalone
+        run: cmake --build build --target ${{ inputs.plugin_name }}_Standalone
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-${{ inputs.plugin_name || 'VocalSat' }}
+          name: linux-${{ inputs.plugin_name }}
           path: build/*_artefacts/*
