@@ -7,16 +7,41 @@
 (function () {
   "use strict";
 
-  var NATIVE = (typeof window !== "undefined" && window.__juce__ &&
-                typeof window.__juce__.invoke === "function")
+  // JUCE 8 exposed window.__juce__.invoke; JUCE 9 uses the native-function
+  // event protocol on window.__JUCE__.backend. Support both so the kit keeps
+  // working on either framework version.
+  var JUCE8 = (typeof window !== "undefined" && window.__juce__ &&
+               typeof window.__juce__.invoke === "function")
     ? window.__juce__.invoke.bind(window.__juce__)
     : null;
 
+  var JUCE9 = (typeof window !== "undefined" && window.__JUCE__ &&
+               window.__JUCE__.backend &&
+               typeof window.__JUCE__.backend.emitEvent === "function" &&
+               window.__JUCE__.initialisationData &&
+               (window.__JUCE__.initialisationData.__juce__functions || []).length > 0)
+    ? window.__JUCE__.backend
+    : null;
+
   function invokeNative(name) {
-    if (!NATIVE) return false;
     var args = Array.prototype.slice.call(arguments, 1);
-    try { NATIVE.apply(null, [name].concat(args)); return true; }
-    catch (e) { return false; }
+    try {
+      if (JUCE8) {
+        JUCE8.apply(null, [name].concat(args));
+        return true;
+      }
+      if (JUCE9) {
+        // Throwaway resultId: the native completion event is ignored instead
+        // of resolving a promise this fire-and-forget helper never tracks.
+        JUCE9.emitEvent("__juce__invoke", {
+          name: name,
+          params: args,
+          resultId: -1
+        });
+        return true;
+      }
+    } catch (e) { /* fall through */ }
+    return false;
   }
 
   /* ---- fitCanvas(cv, redraw[, opts]) ---------------------------------------

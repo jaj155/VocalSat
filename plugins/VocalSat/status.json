@@ -1,0 +1,74 @@
+﻿{
+    "plugin_name":  "VocalSat",
+    "version":  "v0.0.0",
+    "current_phase":  "code_complete",
+    "ui_framework":  "webview",
+    "complexity_score":  2,
+    "created_at":  "2026-11-06T16:50:58.2707056-03:00",
+    "last_modified":  "2026-11-09T14:09:01.2265241-03:00",
+    "phase_history":  [
+                          {
+                              "phase":  "ideation_complete",
+                              "completed_at":  "2026-11-06T16:51:33.5036995-03:00",
+                              "framework_selected":  "pending"
+                          },
+                          {
+                              "phase":  "plan_complete",
+                              "completed_at":  "2026-11-09T11:14:47.0589175-03:00",
+                              "framework_selected":  "webview"
+                          },
+                          {
+                              "phase":  "design_complete",
+                              "completed_at":  "2026-11-09T11:26:57.7345660-03:00",
+                              "framework_selected":  "webview"
+                          },
+                          {
+                              "phase":  "code_complete",
+                              "completed_at":  "2026-11-09T14:09:01.2315383-03:00",
+                              "framework_selected":  "webview"
+                          }
+                      ],
+    "current_generation":  null,
+    "generations":  [
+
+                    ],
+    "validation":  {
+                       "creative_brief_exists":  true,
+                       "parameter_spec_exists":  true,
+                       "architecture_defined":  true,
+                       "ui_framework_selected":  true,
+                       "design_complete":  true,
+                       "code_complete":  true,
+                       "tests_passed":  false,
+                       "ship_ready":  false,
+                       "build_completed":  true,
+                       "build_timestamp":  "2026-11-09T14:08:33Z",
+                       "build_errors":  0
+                   },
+    "framework_selection":  {
+                                "decision":  "webview",
+                                "rationale":  "WebView2 escolhido para a UI vintage de estudio (VU meter, knobs skeumorficos, brilho ambar) e por ser o padrao do projeto; visual rico e mais simples em HTML/CSS/JS que em Visage.",
+                                "implementation_strategy":  "single-pass"
+                            },
+    "formats":  {
+                    "clap":  false,
+                    "clap_id":  null,
+                    "clap_features":  [
+
+                                      ]
+                },
+    "error_recovery":  {
+                           "last_backup":  "C:\\Users\\e2380\\Documents\\calicaapc\\audio-plugin-coder\\plugins\\VocalSat\\_state_backups\\status_backup_20261109_135817.json",
+                           "rollback_available":  true,
+                           "error_log":  [
+
+                                         ]
+                       },
+    "design_lock":  {
+                        "map":  "Design/v2-ui-map.json",
+                        "version":  "v2",
+                        "sha256":  "710a81f29773797f583fc3b15036edc2b7e6e7ed1454a430a438d436df8513a1",
+                        "approved_at":  "2026-11-09T11:51:46.2217374-03:00",
+                        "iterations":  2
+                    }
+}

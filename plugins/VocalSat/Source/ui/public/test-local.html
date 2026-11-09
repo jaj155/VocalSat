@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocalSat</title>
+<!-- webview-008 / webview-011: every stylesheet and script is inline. -->
+<style>
+
+
+:root {
+  
+  --cols: 50;
+  --rows: 27.5;
+
+  
+  --apc-letterbox: #000;
+
+  
+  --plate:      #1a1a1f;
+  --plate-2:    #232329;
+  --surface:    #101014;
+  --inset:      #0a0a0d;
+  --rule:       #3a3a45;
+  --rule-2:     #2a2a33;
+  --ink:        #f0f0f5;
+  --ink-2:      #a0a0a5;
+  --accent:     #ffc300;
+  --grip-ink:   #4a4a55;
+
+  --r-control:  4px;
+  --r-panel:    6px;
+  --font-ui:    "Roboto Mono", ui-monospace, monospace;
+
+  --sh-recess:  inset 0 1px 3px rgba(0,0,0,.55);
+  --sh-raised:  0 1px 0 rgba(255,255,255,.06), 0 3px 6px rgba(0,0,0,.35);
+}
+
+
+html {
+  font-size: min(calc(100vw / var(--cols)), calc(100vh / var(--rows)));
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--apc-letterbox);
+  font-family: var(--font-ui);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+
+.apc-plate {
+  position: relative;
+  width:  calc(var(--cols) * 1rem);
+  height: calc(var(--rows) * 1rem);
+  background: var(--plate);
+  overflow: hidden;
+}
+
+
+.apc-plate .apc-cell { position: absolute; box-sizing: border-box; }
+.apc-cell { box-sizing: border-box; }
+
+
+.apc-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: nwse-resize;
+  touch-action: none;
+  z-index: 90;
+}
+.apc-grip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  background:
+    repeating-linear-gradient(-45deg,
+      var(--grip-ink) 0 1px,
+      transparent 1px calc(.375rem));
+  opacity: .8;
+}
+.apc-grip:hover::before { opacity: 1; }
+
+
+.apc-section {
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--plate-2);
+  border: 1px solid var(--rule-2);
+  border-radius: var(--r-panel);
+}
+
+
+
+
+.apc-micro  { font-size: max(9px, .5rem);  }
+.apc-label  { font-size: max(10px, .625rem); }
+.apc-readout{ font-size: max(11px, .75rem); }
+
+
+
+
+.apc-knob { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+.apc-knob-dial {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, var(--plate-2), var(--inset) 75%);
+  border: 1px solid var(--rule);
+  box-shadow: var(--sh-raised);
+}
+.apc-knob-pointer {
+  position: absolute;
+  left: 50%; top: 8%;
+  width: max(1px, .09rem);
+  height: 30%;
+  background: var(--accent);
+  transform-origin: 50% 140%;
+  transform: translateX(-50%) rotate(-135deg);
+}
+.apc-knob-label, .apc-ctl-label {
+  font-size: var(--t-label, .5rem);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+
+.apc-sec-tag {
+  position: absolute; left: .375rem; top: .1875rem;
+  font-size: .4rem; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-2); opacity: .55;
+  white-space: nowrap; pointer-events: none;
+}
+
+
+.apc-flip { display: flex; flex-direction: column; align-items: center; gap: .1875rem; }
+.apc-flip-cap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 1.25rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-control);
+  background: var(--plate-2);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--t-value, .625rem);
+  font-weight: 600;
+  letter-spacing: .1em;
+  cursor: pointer;
+  box-shadow: var(--sh-raised);
+}
+.apc-flip-cap::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: inherit; pointer-events: none;
+  box-shadow: var(--sh-recess); opacity: .4;
+}
+.apc-flip-cap:active { filter: brightness(1.15); }
+
+
+.apc-psw {
+  display: flex; align-items: center; justify-content: center;
+  gap: .375rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-control);
+  background: var(--plate-2);
+  color: var(--ink-2);
+  font-family: var(--font-ui);
+  font-size: var(--t-label, .5rem);
+  font-weight: 600;
+  letter-spacing: .14em;
+  cursor: pointer;
+  box-shadow: var(--sh-raised);
+}
+.apc-psw .led {
+  width: .5rem; height: .5rem; border-radius: 50%;
+  background: var(--ink-2); opacity: .35;
+}
+.apc-psw[aria-checked="true"] { color: var(--ink); }
+.apc-psw[aria-checked="true"] .led {
+  background: var(--accent); opacity: 1;
+  box-shadow: 0 0 .5rem var(--accent);
+}
+
+
+.apc-fader { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+.apc-fader-track {
+  position: relative; flex: 1; width: .375rem;
+  background: var(--inset); border-radius: 2px;
+  box-shadow: var(--sh-recess);
+}
+.apc-fader-cap {
+  position: absolute; left: 50%; top: 20%;
+  width: 1.5rem; height: .625rem;
+  transform: translate(-50%, -50%);
+  background: var(--plate-2);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: var(--sh-raised);
+}
+
+
+.apc-screen {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--inset);
+  border-radius: 3px;
+  box-shadow: var(--sh-recess);
+  color: var(--accent);
+  font-size: var(--t-readout, .6875rem);
+  font-weight: 600;
+  letter-spacing: .08em;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.apc-well {
+  position: relative; overflow: hidden;
+  background: var(--inset);
+  border-radius: var(--r-control);
+}
+.apc-well::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: inherit; box-shadow: var(--sh-recess);
+  pointer-events: none; z-index: 2;
+}
+.apc-well canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+
+.apc-chip {
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  background: var(--plate-2);
+  color: var(--ink-2);
+  font-family: var(--font-ui);
+  font-size: var(--t-micro, .4375rem);
+  font-weight: 600;
+  letter-spacing: .1em;
+  cursor: pointer;
+}
+.apc-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+
+:root {
+  --cols: 45;
+  --rows: 30;
+  --apc-letterbox: var(--surface);
+
+  --plate: #2a2621;
+  --plate-2: #34302a;
+  --surface: #121010;
+  --inset: #0d0b09;
+  --rule: #5c5245;
+  --rule-2: #403930;
+  --ink: #f4e9d4;
+  --ink-2: #b9a888;
+  --accent: #ffb347;
+  --grip-ink: #6d5f4b;
+  --font-ui: "Bahnschrift", "Segoe UI", ui-sans-serif, sans-serif;
+  --t-label: .625rem;
+  --t-value: .75rem;
+  --t-readout: .8125rem;
+  --t-micro: .4375rem;
+  --day-meter-face: #efe4c8;
+  --meter-ink: #3b3327;
+  --meter-accent: #b8862f;
+  --meter-brand: VU;
+}
+
+.apc-knob {
+  cursor: ns-resize;
+  touch-action: none;
+}
+.apc-knob:focus { outline: none; }
+.apc-knob:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-control);
+}
+.apc-knob-pointer { transition: transform 90ms linear; }
+.apc-knob:hover .apc-knob-pointer { background: #ffd28a; }
+.apc-knob.is-dragging .apc-knob-dial {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .55);
+}
+
+.apc-plate.is-bypassed .apc-knob,
+.apc-plate.is-bypassed .apc-screen { opacity: .6; }
+
+.apc-psw { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .apc-knob-pointer { transition: none; }
+}
+
+</style>
+</head>
+<body>
+<div class="apc-plate">
+    <div class="apc-cell apc-section" id="sec-mast" style="left:0.5rem;top:0.5rem;width:44rem;height:3.25rem;"><span class="apc-sec-tag"></span></div>
+    <div class="apc-cell apc-section" id="sec-meter-bay" style="left:1.5rem;top:4rem;width:22.5rem;height:13.5rem;"><span class="apc-sec-tag">METER</span></div>
+    <div class="apc-cell apc-section" id="sec-notes" style="left:1.5rem;top:18rem;width:22.5rem;height:6rem;"><span class="apc-sec-tag">CHARACTER</span></div>
+    <div class="apc-cell apc-section" id="sec-controls" style="left:24.75rem;top:4rem;width:19.75rem;height:20rem;"><span class="apc-sec-tag">SATURATION</span></div>
+    <div class="apc-cell apc-section" id="sec-footer" style="left:0.5rem;top:25.75rem;width:44rem;height:3.75rem;"><span class="apc-sec-tag">ANALOG WARMTH</span></div>
+
+    <div class="apc-cell apc-well" id="cv-meter" style="left:3rem;top:5.5rem;width:20rem;height:10.5rem;"><canvas></canvas></div>
+
+    <div class="apc-cell apc-ctl-label" id="ctl-brand" style="left:2rem;top:1.25rem;width:16rem;height:1.75rem;">VOCALSAT</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-tagline" style="left:27rem;top:1.25rem;width:16rem;height:1.75rem;">ANALOG WARMTH</div>
+
+    <div class="apc-cell apc-knob" id="ctl-drive" data-param="drive" role="slider" tabindex="0"
+         aria-label="Drive" aria-valuemin="0" aria-valuemax="24" aria-valuenow="6"
+         style="left:25.5rem;top:6rem;width:6rem;height:6.5rem;">
+      <div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div>
+      <div class="apc-ctl-label">DRIVE</div>
+    </div>
+    <div class="apc-cell apc-knob" id="ctl-tone" data-param="tone" role="slider" tabindex="0"
+         aria-label="Tone" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"
+         style="left:32rem;top:6rem;width:6rem;height:6.5rem;">
+      <div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div>
+      <div class="apc-ctl-label">TONE</div>
+    </div>
+    <div class="apc-cell apc-knob" id="ctl-mix" data-param="mix" role="slider" tabindex="0"
+         aria-label="Mix" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"
+         style="left:38.5rem;top:6rem;width:6rem;height:6.5rem;">
+      <div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div>
+      <div class="apc-ctl-label">MIX</div>
+    </div>
+
+    <div class="apc-cell apc-screen" id="ctl-drive-readout" style="left:25.5rem;top:13.5rem;width:6rem;height:2.25rem;">6.0 dB</div>
+    <div class="apc-cell apc-screen" id="ctl-tone-readout" style="left:32rem;top:13.5rem;width:6rem;height:2.25rem;">0 %</div>
+    <div class="apc-cell apc-screen" id="ctl-mix-readout" style="left:38.5rem;top:13.5rem;width:6rem;height:2.25rem;">100 %</div>
+
+    <button class="apc-cell apc-psw" id="ctl-bypass" data-param="bypass" aria-checked="false"
+            style="left:25.5rem;top:18rem;width:9rem;height:3rem;">
+      <span class="led"></span><span>BYPASS</span>
+    </button>
+
+    <div class="apc-cell apc-ctl-label" id="ctl-note-1" style="left:3rem;top:19.5rem;width:19rem;height:1.25rem;">VOCAL-FIRST SATURATION</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-note-2" style="left:3rem;top:21.25rem;width:19rem;height:1.25rem;">AUTO GAIN COMPENSATION</div>
+
+    <div class="apc-cell apc-ctl-label" id="ctl-footer-left" style="left:2.5rem;top:26.5rem;width:18rem;height:1.5rem;">4x OVERSAMPLING</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-footer-right" style="left:30rem;top:26.5rem;width:13rem;height:1.5rem;">VST3 / STANDALONE</div>
+
+    <div class="apc-grip" id="ctl-grip" title="Drag to resize"></div>
+</div>
+
+<script>
+/* =============================================================================
+   JUCE 9 webview interop, inlined and exposed as window.Juce.
+   Source: _tools/JUCE/modules/juce_gui_extra/native/typescript/webview-interop/dist/index.js
+   ============================================================================= */
+(function () {
+  "use strict";
+/*!
+  ==============================================================================
+
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
+
+   JUCE is an open source framework subject to commercial or open source
+   licensing.
+
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
+
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-9-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
+
+   Or:
+
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
+
+  ==============================================================================
+*/
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __objRest = (source, exclude) => {
+  var target = {};
+  for (var prop in source)
+    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+      target[prop] = source[prop];
+  if (source != null && __getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(source)) {
+      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+        target[prop] = source[prop];
+    }
+  return target;
+};
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
+
+// src/check_native_interop.ts
+var JuceInitialisationData = class {
+  constructor() {
+    this.__juce__platform = [];
+    this.__juce__functions = [];
+    this.__juce__registeredGlobalEventIds = [];
+    this.__juce__sliders = [];
+    this.__juce__toggles = [];
+    this.__juce__comboBoxes = [];
+  }
+};
+var ListenerList = class {
+  constructor() {
+    this.listeners = /* @__PURE__ */ new Map();
+    this.listenerId = 0;
+  }
+  addListener(fn) {
+    const newListenerId = this.listenerId++;
+    this.listeners.set(newListenerId, fn);
+    return newListenerId;
+  }
+  removeListener(id) {
+    if (this.listeners.has(id)) {
+      this.listeners.delete(id);
+    }
+  }
+  callListeners(payload) {
+    for (const [, value] of this.listeners) {
+      value(payload);
+    }
+  }
+};
+var EventListenerList = class {
+  constructor() {
+    this.eventListeners = /* @__PURE__ */ new Map();
+  }
+  addEventListener(eventId, fn) {
+    let list = this.eventListeners.get(eventId);
+    if (!list) {
+      list = new ListenerList();
+      this.eventListeners.set(eventId, list);
+    }
+    const id = list.addListener(fn);
+    return [eventId, id];
+  }
+  removeEventListener([eventId, id]) {
+    var _a;
+    (_a = this.eventListeners.get(eventId)) == null ? void 0 : _a.removeListener(id);
+  }
+  emitEvent(eventId, object) {
+    var _a;
+    (_a = this.eventListeners.get(eventId)) == null ? void 0 : _a.callListeners(object);
+  }
+};
+var Backend = class {
+  constructor() {
+    this.listeners = new EventListenerList();
+  }
+  /**
+   * Registers a function to listen to events emitted by the backend. The backend can
+   * emit such events by calling WebBrowserComponent::emitEventIfBrowserIsVisible.
+   *
+   * @param eventId The identifier of the emitted event.
+   * @param fn      The function to be called when the event is received.
+   */
+  addEventListener(eventId, fn) {
+    return this.listeners.addEventListener(eventId, fn);
+  }
+  removeEventListener(handle) {
+    this.listeners.removeEventListener(handle);
+  }
+  /**
+   * Sends an event from the frontend to the native backend.
+   *
+   * @param eventId The identifier of the event to emit.
+   * @param object  The payload to send along with the event.
+   */
+  emitEvent(eventId, object) {
+    window.__JUCE__.postMessage(
+      JSON.stringify({ eventId, payload: object })
+    );
+  }
+  /**
+   * Internal function called by the JUCE backend implementation.
+   *
+   * User Javascript code running inside the WebView should not call this
+   * function.
+   *
+   * @param eventId The identifier of the event to emit.
+   * @param object  The JSON-encoded payload to send along with the event.
+   */
+  emitByBackend(eventId, object) {
+    this.listeners.emitEvent(eventId, JSON.parse(object));
+  }
+};
+if (typeof window.__JUCE__ !== "undefined" && typeof window.__JUCE__.getAndroidUserScripts !== "undefined" && typeof window.inAndroidUserScriptEval === "undefined") {
+  window.inAndroidUserScriptEval = true;
+  (0, eval)(window.__JUCE__.getAndroidUserScripts());
+  delete window.inAndroidUserScriptEval;
+}
+if (typeof window.__JUCE__ === "undefined") {
+  console.warn(
+    "The 'window.__JUCE__' object is undefined. Native integration features will not work. Defining a placeholder 'window.__JUCE__' object."
+  );
+  window.__JUCE__ = {};
+}
+if (typeof window.__JUCE__.postMessage === "undefined") {
+  window.__JUCE__.postMessage = function() {
+  };
+}
+if (typeof window.__JUCE__.initialisationData === "undefined") {
+  window.__JUCE__.initialisationData = new JuceInitialisationData();
+}
+if (typeof window.__JUCE__.backend === "undefined") {
+  window.__JUCE__.backend = new Backend();
+}
+
+// src/index.ts
+var PromiseHandler = class {
+  constructor() {
+    this.lastPromiseId = 0;
+    this.promises = /* @__PURE__ */ new Map();
+    window.__JUCE__.backend.addEventListener("__juce__complete", (payload) => {
+      const { promiseId, result } = payload;
+      const entry = this.promises.get(promiseId);
+      if (entry) {
+        entry.resolve(result);
+        this.promises.delete(promiseId);
+      }
+    });
+  }
+  createPromise() {
+    const promiseId = this.lastPromiseId++;
+    const result = new Promise((resolve, reject) => {
+      this.promises.set(promiseId, { resolve, reject });
+    });
+    return [promiseId, result];
+  }
+};
+var promiseHandler = new PromiseHandler();
+function getNativeFunction(name) {
+  if (!window.__JUCE__.initialisationData.__juce__functions.includes(name))
+    console.warn(
+      `Creating native function binding for '${name}', which is unknown to the backend`
+    );
+  const f = (...args) => {
+    const [promiseId, result] = promiseHandler.createPromise();
+    window.__JUCE__.backend.emitEvent("__juce__invoke", {
+      name,
+      params: args,
+      resultId: promiseId
+    });
+    return result;
+  };
+  return f;
+}
+var versionCheckFunctionName = "__juce__reportJuceFrameworkWebViewVersion";
+if (window.__JUCE__.initialisationData.__juce__functions.includes(
+  versionCheckFunctionName
+)) {
+  getNativeFunction(versionCheckFunctionName)(
+    "1.0.0"
+  ).then((backendVersion) => {
+    if (backendVersion !== "1.0.0") {
+      console.warn(
+        `The backend expected a @juce-framework/webview version of ${backendVersion}, but got ${"1.0.0"}. You should use matching backend and frontend versions.`
+      );
+    }
+  });
+}
+var ListenerList2 = class {
+  constructor() {
+    this.listeners = /* @__PURE__ */ new Map();
+    this.listenerId = 0;
+  }
+  addListener(fn) {
+    const newListenerId = this.listenerId++;
+    this.listeners.set(newListenerId, fn);
+    return newListenerId;
+  }
+  removeListener(id) {
+    if (this.listeners.has(id)) {
+      this.listeners.delete(id);
+    }
+  }
+  callListeners() {
+    for (const [, value] of this.listeners) {
+      value();
+    }
+  }
+};
+var BasicControl_valueChangedEventId = "valueChanged";
+var BasicControl_propertiesChangedId = "propertiesChanged";
+var SliderControl_sliderDragStartedEventId = "sliderDragStarted";
+var SliderControl_sliderDragEndedEventId = "sliderDragEnded";
+var SliderState = class {
+  constructor(name) {
+    this.scaledValue = 0;
+    this.properties = {
+      start: 0,
+      end: 1,
+      skew: 1,
+      name: "",
+      label: "",
+      numSteps: 100,
+      interval: 0,
+      parameterIndex: -1
+    };
+    this.valueChangedEvent = new ListenerList2();
+    this.propertiesChangedEvent = new ListenerList2();
+    if (!window.__JUCE__.initialisationData.__juce__sliders.includes(name))
+      console.warn(
+        "Creating SliderState for '" + name + "', which is unknown to the backend"
+      );
+    this.name = name;
+    this.identifier = "__juce__slider" + this.name;
+    window.__JUCE__.backend.addEventListener(
+      this.identifier,
+      (event) => this.handleEvent(event)
+    );
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: "requestInitialUpdate"
+    });
+  }
+  /**
+   * Sets the normalised value of the corresponding backend parameter. This value is always in the
+   * [0, 1] range (inclusive).
+   *
+   * The meaning of this range is the same as in the case of
+   * AudioProcessorParameter::getValue() (C++).
+   *
+   * @param {String} name
+   */
+  setNormalisedValue(newValue) {
+    this.scaledValue = this.snapToLegalValue(
+      this.normalisedToScaledValue(newValue)
+    );
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: BasicControl_valueChangedEventId,
+      value: this.scaledValue
+    });
+  }
+  /**
+   * This function should be called first thing when the user starts interacting with the slider.
+   */
+  sliderDragStarted() {
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: SliderControl_sliderDragStartedEventId
+    });
+  }
+  /**
+   * This function should be called when the user finished the interaction with the slider.
+   */
+  sliderDragEnded() {
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: SliderControl_sliderDragEndedEventId
+    });
+  }
+  /** Internal. */
+  handleEvent(event) {
+    const e = event;
+    if (e.eventType === BasicControl_valueChangedEventId) {
+      this.scaledValue = e.value;
+      this.valueChangedEvent.callListeners();
+    }
+    if (e.eventType === BasicControl_propertiesChangedId) {
+      let _a = e, { eventType: _ } = _a, rest = __objRest(_a, ["eventType"]);
+      this.properties = rest;
+      this.propertiesChangedEvent.callListeners();
+    }
+  }
+  /**
+   * Returns the scaled value of the parameter. This corresponds to the return value of
+   * NormalisableRange::convertFrom0to1() (C++). This value will differ from a linear
+   * [0, 1] range if a non-default NormalisableRange was set for the parameter.
+   */
+  getScaledValue() {
+    return this.scaledValue;
+  }
+  /**
+   * Returns the normalised value of the corresponding backend parameter. This value is always in the
+   * [0, 1] range (inclusive).
+   *
+   * The meaning of this range is the same as in the case of
+   * AudioProcessorParameter::getValue() (C++).
+   *
+   * @param {String} name
+   */
+  getNormalisedValue() {
+    return Math.pow(
+      (this.scaledValue - this.properties.start) / (this.properties.end - this.properties.start),
+      this.properties.skew
+    );
+  }
+  /** Internal. */
+  normalisedToScaledValue(normalisedValue) {
+    return Math.pow(normalisedValue, 1 / this.properties.skew) * (this.properties.end - this.properties.start) + this.properties.start;
+  }
+  /** Internal. */
+  snapToLegalValue(value) {
+    const interval = this.properties.interval;
+    if (interval == 0) return value;
+    const start = this.properties.start;
+    const clamp = (val, min = 0, max = 1) => Math.max(min, Math.min(max, val));
+    return clamp(
+      start + interval * Math.floor((value - start) / interval + 0.5),
+      this.properties.start,
+      this.properties.end
+    );
+  }
+};
+var sliderStates = /* @__PURE__ */ new Map();
+for (const sliderName of window.__JUCE__.initialisationData.__juce__sliders)
+  sliderStates.set(sliderName, new SliderState(sliderName));
+function getSliderState(name) {
+  let state = sliderStates.get(name);
+  if (!state) {
+    state = new SliderState(name);
+    sliderStates.set(name, state);
+  }
+  return state;
+}
+var ToggleState = class {
+  constructor(name) {
+    this.value = false;
+    this.properties = {
+      name: "",
+      parameterIndex: -1
+    };
+    this.valueChangedEvent = new ListenerList2();
+    this.propertiesChangedEvent = new ListenerList2();
+    if (!window.__JUCE__.initialisationData.__juce__toggles.includes(name))
+      console.warn(
+        "Creating ToggleState for '" + name + "', which is unknown to the backend"
+      );
+    this.name = name;
+    this.identifier = "__juce__toggle" + this.name;
+    window.__JUCE__.backend.addEventListener(
+      this.identifier,
+      (event) => this.handleEvent(event)
+    );
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: "requestInitialUpdate"
+    });
+  }
+  /** Returns the value corresponding to the associated WebToggleRelay's (C++) state. */
+  getValue() {
+    return this.value;
+  }
+  /** Informs the backend to change the associated WebToggleRelay's (C++) state. */
+  setValue(newValue) {
+    this.value = newValue;
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: BasicControl_valueChangedEventId,
+      value: this.value
+    });
+  }
+  /** Internal. */
+  handleEvent(event) {
+    const e = event;
+    if (e.eventType == BasicControl_valueChangedEventId) {
+      this.value = e.value;
+      this.valueChangedEvent.callListeners();
+    }
+    if (e.eventType == BasicControl_propertiesChangedId) {
+      let _a = e, { eventType: _ } = _a, rest = __objRest(_a, ["eventType"]);
+      this.properties = rest;
+      this.propertiesChangedEvent.callListeners();
+    }
+  }
+};
+var toggleStates = /* @__PURE__ */ new Map();
+for (const name of window.__JUCE__.initialisationData.__juce__toggles)
+  toggleStates.set(name, new ToggleState(name));
+function getToggleState(name) {
+  let state = toggleStates.get(name);
+  if (!state) {
+    state = new ToggleState(name);
+    toggleStates.set(name, state);
+  }
+  return state;
+}
+var ComboBoxState = class {
+  constructor(name) {
+    this.value = 0;
+    this.properties = {
+      name: "",
+      parameterIndex: -1,
+      choices: []
+    };
+    this.valueChangedEvent = new ListenerList2();
+    this.propertiesChangedEvent = new ListenerList2();
+    if (!window.__JUCE__.initialisationData.__juce__comboBoxes.includes(name))
+      console.warn(
+        "Creating ComboBoxState for '" + name + "', which is unknown to the backend"
+      );
+    this.name = name;
+    this.identifier = "__juce__comboBox" + this.name;
+    window.__JUCE__.backend.addEventListener(
+      this.identifier,
+      (event) => this.handleEvent(event)
+    );
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: "requestInitialUpdate"
+    });
+  }
+  /**
+   * Returns the value corresponding to the associated WebComboBoxRelay's (C++) state.
+   *
+   * This is an index identifying which element of the properties.choices array is currently
+   * selected.
+   */
+  getChoiceIndex() {
+    return Math.round(this.value * (this.properties.choices.length - 1));
+  }
+  /**
+   * Informs the backend to change the associated WebComboBoxRelay's (C++) state.
+   *
+   * This should be called with the index identifying the selected element from the
+   * properties.choices array.
+   */
+  setChoiceIndex(index) {
+    const numItems = this.properties.choices.length;
+    this.value = numItems > 1 ? index / (numItems - 1) : 0;
+    window.__JUCE__.backend.emitEvent(this.identifier, {
+      eventType: BasicControl_valueChangedEventId,
+      value: this.value
+    });
+  }
+  /** Internal. */
+  handleEvent(event) {
+    const e = event;
+    if (e.eventType == BasicControl_valueChangedEventId) {
+      this.value = e.value;
+      this.valueChangedEvent.callListeners();
+    }
+    if (e.eventType == BasicControl_propertiesChangedId) {
+      let _a = e, { eventType: _ } = _a, rest = __objRest(_a, ["eventType"]);
+      this.properties = rest;
+      this.propertiesChangedEvent.callListeners();
+    }
+  }
+};
+var comboBoxStates = /* @__PURE__ */ new Map();
+for (const name of window.__JUCE__.initialisationData.__juce__comboBoxes)
+  comboBoxStates.set(name, new ComboBoxState(name));
+function getComboBoxState(name) {
+  let state = comboBoxStates.get(name);
+  if (!state) {
+    state = new ComboBoxState(name);
+    comboBoxStates.set(name, state);
+  }
+  return state;
+}
+function getBackendResourceAddress(path) {
+  const platform = window.__JUCE__.initialisationData.__juce__platform.length > 0 ? window.__JUCE__.initialisationData.__juce__platform[0] : "";
+  if (platform == "windows" || platform == "android")
+    return "https://juce.backend/" + path;
+  if (platform == "macos" || platform == "ios" || platform == "linux")
+    return "juce://juce.backend/" + path;
+  console.warn(
+    "getBackendResourceAddress() called, but no JUCE native backend is detected."
+  );
+  return path;
+}
+var _ControlParameterIndexUpdater_instances, getControlParameterIndex_fn;
+var ControlParameterIndexUpdater = class {
+  constructor(controlParameterIndexAnnotation) {
+    __privateAdd(this, _ControlParameterIndexUpdater_instances);
+    this.lastElement = null;
+    this.lastControlParameterIndex = -1;
+    this.controlParameterIndexAnnotation = controlParameterIndexAnnotation;
+  }
+  handleMouseMove(event) {
+    const currentElement = document.elementFromPoint(
+      event.clientX,
+      event.clientY
+    );
+    if (currentElement === this.lastElement) return;
+    this.lastElement = currentElement;
+    let controlParameterIndex = -1;
+    if (currentElement !== null)
+      controlParameterIndex = __privateMethod(this, _ControlParameterIndexUpdater_instances, getControlParameterIndex_fn).call(this, currentElement);
+    if (controlParameterIndex === this.lastControlParameterIndex) return;
+    this.lastControlParameterIndex = controlParameterIndex;
+    window.__JUCE__.backend.emitEvent(
+      "__juce__controlParameterIndexChanged",
+      controlParameterIndex
+    );
+  }
+};
+_ControlParameterIndexUpdater_instances = new WeakSet();
+//==============================================================================
+getControlParameterIndex_fn = function(element) {
+  const isValidNonRootElement = (e) => {
+    return e !== null && e !== document.documentElement;
+  };
+  while (isValidNonRootElement(element)) {
+    if (element.hasAttribute(this.controlParameterIndexAnnotation)) {
+      const attribute = element.getAttribute(
+        this.controlParameterIndexAnnotation
+      );
+      const attributeValue = Number(attribute);
+      if (attribute === null || Number.isNaN(attributeValue)) {
+        console.error(
+          `Expected the "${this.controlParameterIndexAnnotation}" attribute to be a number,
+             got "${attributeValue}". You should set this attribute to the parameterIndex member
+             of the corresponding SliderState, ToggleState or ComboBoxState object's properties.`
+        );
+        return -1;
+      }
+      return attributeValue;
+    }
+    element = element.parentElement;
+  }
+  return -1;
+};
+
+  window.Juce = {
+    ControlParameterIndexUpdater: ControlParameterIndexUpdater,
+    getBackendResourceAddress: getBackendResourceAddress,
+    getComboBoxState: getComboBoxState,
+    getNativeFunction: getNativeFunction,
+    getSliderState: getSliderState,
+    getToggleState: getToggleState
+  };
+})();
+
+/* =============================================================================
+   APC UI kit runtime (canvas backing-store fit + in-page corner grip).
+   Source: templates/webview/apc-ui/apc-fit.js
+   ============================================================================= */
+/* =============================================================================
+   apc-fit.js — APC UI kit runtime (classic script; attaches window.APC)
+   Layout geometry is pure CSS (see apc-core.css); this file covers only what
+   CSS cannot: canvas backing-store fit and the in-page resize grip.
+   webview-008: no ES modules — this file must stay classic-script safe.
+   ============================================================================= */
+(function () {
+  "use strict";
+
+  // JUCE 8 exposed window.__juce__.invoke; JUCE 9 uses the native-function
+  // event protocol on window.__JUCE__.backend. Support both so the kit keeps
+  // working on either framework version.
+  var JUCE8 = (typeof window !== "undefined" && window.__juce__ &&
+               typeof window.__juce__.invoke === "function")
+    ? window.__juce__.invoke.bind(window.__juce__)
+    : null;
+
+  var JUCE9 = (typeof window !== "undefined" && window.__JUCE__ &&
+               window.__JUCE__.backend &&
+               typeof window.__JUCE__.backend.emitEvent === "function" &&
+               window.__JUCE__.initialisationData &&
+               (window.__JUCE__.initialisationData.__juce__functions || []).length > 0)
+    ? window.__JUCE__.backend
+    : null;
+
+  function invokeNative(name) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    try {
+      if (JUCE8) {
+        JUCE8.apply(null, [name].concat(args));
+        return true;
+      }
+      if (JUCE9) {
+        // Throwaway resultId: the native completion event is ignored instead
+        // of resolving a promise this fire-and-forget helper never tracks.
+        JUCE9.emitEvent("__juce__invoke", {
+          name: name,
+          params: args,
+          resultId: -1
+        });
+        return true;
+      }
+    } catch (e) { /* fall through */ }
+    return false;
+  }
+
+  /* ---- fitCanvas(cv, redraw[, opts]) ---------------------------------------
+     Keeps a canvas backing store at device resolution: width = CSS box * dpr.
+     redraw(ctx, w, h) paints in CSS px (ctx is pre-scaled by dpr).
+     Re-fits via ResizeObserver. Returns { dispose }. */
+  function fitCanvas(cv, redraw, opts) {
+    opts = opts || {};
+    var maxDpr = opts.maxDpr || 3;
+    function fit() {
+      var r = cv.getBoundingClientRect();
+      var dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+      var w = Math.max(1, Math.round(r.width * dpr));
+      var h = Math.max(1, Math.round(r.height * dpr));
+      if (cv.width !== w || cv.height !== h) {
+        cv.width = w; cv.height = h;
+      }
+      var ctx = cv.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      redraw(ctx, r.width, r.height);
+    }
+    fit();
+    var ro = (typeof ResizeObserver !== "undefined") ? new ResizeObserver(fit) : null;
+    if (ro) ro.observe(cv); else window.addEventListener("resize", fit);
+    return { dispose: function () { if (ro) ro.disconnect(); else window.removeEventListener("resize", fit); }, refit: fit };
+  }
+
+  /* ---- attachGrip(el[, opts]) ------------------------------------------------
+     In-page corner resize gripper. Forwards accumulated drag deltas (CSS px =
+     JUCE logical px) to the native `resizeGripStart` / `resizeGrip` functions.
+     Falls back to a no-op outside JUCE so the preview stays safe in a browser. */
+  function attachGrip(el, opts) {
+    opts = opts || {};
+    var origin = null;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      origin = { x: e.clientX, y: e.clientY };
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      invokeNative("resizeGripStart");
+      e.preventDefault();
+    });
+    el.addEventListener("pointermove", function (e) {
+      if (!origin) return;
+      var dx = e.clientX - origin.x;
+      var dy = e.clientY - origin.y;
+      invokeNative("resizeGrip", Math.round(dx), Math.round(dy));
+      if (opts.onDrag) opts.onDrag(dx, dy);
+    });
+    function end() { if (origin) { origin = null; invokeNative("resizeGripEnd"); } }
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+  }
+
+  /* ---- mountKit(root) --------------------------------------------------------
+     Auto-wires kit elements inside root: every .apc-grip gets drag forwarding,
+     every canvas[data-fit] gets fitCanvas with an optional global redraw fn
+     named by data-fit. */
+  function mountKit(root) {
+    root = root || document;
+    Array.prototype.forEach.call(root.querySelectorAll(".apc-grip"), function (g) {
+      attachGrip(g);
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("canvas[data-fit]"), function (cv) {
+      var fn = window[cv.getAttribute("data-fit")];
+      if (typeof fn === "function") fitCanvas(cv, fn);
+    });
+  }
+
+  window.APC = {
+    invokeNative: invokeNative,
+    fitCanvas: fitCanvas,
+    attachGrip: attachGrip,
+    mountKit: mountKit
+  };
+})();
+
+
+/* =============================================================================
+   VocalSat - production UI logic
+   Bound to Design/v2-ui-map.json (720 x 480, 45 x 30 cells, scalable).
+   The JUCE 9 interop library above exposes window.Juce; the APC kit below
+   exposes window.APC (canvas fit + corner grip).
+   ============================================================================= */
+(function () {
+  "use strict";
+
+  var Juce = window.Juce || null;
+  var NATIVE = !!(window.__JUCE__ && window.__JUCE__.initialisationData &&
+                  (window.__JUCE__.initialisationData.__juce__functions || []).length > 0);
+  window.__APC_NATIVE__ = NATIVE;
+
+  var PARAMS = {
+    drive: { min: 0, max: 24, def: 6, decimals: 1, label: "Drive" },
+    tone: { min: -100, max: 100, def: 0, decimals: 0, label: "Tone" },
+    mix: { min: 0, max: 100, def: 100, decimals: 0, label: "Mix" }
+  };
+
+  function clamp01(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+  /* ---- native function bridge (JUCE 9 promise protocol) ------------------- */
+  function nativeCall(name, fallback) {
+    var fn = (NATIVE && Juce && typeof Juce.getNativeFunction === "function")
+      ? Juce.getNativeFunction(name)
+      : null;
+
+    return function () {
+      var args = Array.prototype.slice.call(arguments);
+      if (!NATIVE || !fn) return Promise.resolve(fallback);
+      try {
+        return Promise.resolve(fn.apply(null, args)).catch(function () { return fallback; });
+      } catch (e) {
+        return Promise.resolve(fallback);
+      }
+    };
+  }
+
+  var getMeter = nativeCall("getMeter", { rmsDb: -100, peakDb: -100 });
+  var getUiPrefs = nativeCall("getUiPrefs", { uiScale: 1 });
+
+  /* ---- parameter state ---------------------------------------------------- */
+  function localState(cfg) {
+    var norm = (cfg.def - cfg.min) / (cfg.max - cfg.min);
+    var listeners = [];
+
+    function emit() {
+      for (var i = 0; i < listeners.length; i++) listeners[i]();
+    }
+
+    return {
+      getNormalisedValue: function () { return norm; },
+      getScaledValue: function () { return cfg.min + norm * (cfg.max - cfg.min); },
+      setNormalisedValue: function (v) { norm = clamp01(v); emit(); },
+      dragStart: function () {},
+      dragEnd: function () {},
+      onChange: function (fn) { listeners.push(fn); }
+    };
+  }
+
+  function nativeState(name, cfg) {
+    var s = Juce.getSliderState(name);
+    var ready = false;
+
+    // JUCE sends the current value in response to requestInitialUpdate. Until
+    // that arrives, show the design default instead of a misleading zero.
+    s.valueChangedEvent.addListener(function () { ready = true; });
+
+    return {
+      getNormalisedValue: function () {
+        if (!ready) return (cfg.def - cfg.min) / (cfg.max - cfg.min);
+        try { return clamp01(s.getNormalisedValue()); }
+        catch (e) { return (cfg.def - cfg.min) / (cfg.max - cfg.min); }
+      },
+      getScaledValue: function () {
+        if (!ready) return cfg.def;
+        try { return s.getScaledValue(); } catch (e) { return cfg.def; }
+      },
+      setNormalisedValue: function (v) { s.setNormalisedValue(v); },
+      dragStart: function () { s.sliderDragStarted(); },
+      dragEnd: function () { s.sliderDragEnded(); },
+      onChange: function (fn) { s.valueChangedEvent.addListener(fn); }
+    };
+  }
+
+  function paramState(name, cfg) {
+    if (NATIVE && Juce && typeof Juce.getSliderState === "function")
+      return nativeState(name, cfg);
+    return localState(cfg);
+  }
+
+  /* ---- formatting --------------------------------------------------------- */
+  function formatValue(param, v) {
+    if (param === "drive") return v.toFixed(1) + " dB";
+    if (param === "tone") return (v > 0.05 ? "+" : "") + Math.round(v) + " %";
+    return Math.round(v) + " %";
+  }
+
+  /* ---- knobs -------------------------------------------------------------- */
+  function setupKnob(param) {
+    var el = document.getElementById("ctl-" + param);
+    if (!el) return;
+
+    var cfg = PARAMS[param];
+    var state = paramState(param, cfg);
+    var pointer = el.querySelector(".apc-knob-pointer");
+    var readout = document.getElementById("ctl-" + param + "-readout");
+
+    function paint() {
+      var v = state.getScaledValue();
+      var n = state.getNormalisedValue();
+
+      if (pointer)
+        pointer.style.transform = "translateX(-50%) rotate(" + (-135 + n * 270) + "deg)";
+
+      if (readout)
+        readout.textContent = formatValue(param, v);
+
+      el.setAttribute("aria-valuenow", v.toFixed(cfg.decimals));
+      el.setAttribute("aria-valuetext", formatValue(param, v));
+    }
+
+    state.onChange(paint);
+    paint();
+
+    var dragging = false;
+    var startY = 0;
+    var startNorm = 0;
+
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      dragging = true;
+      startY = e.clientY;
+      startNorm = state.getNormalisedValue();
+      try { el.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      state.dragStart();
+      el.classList.add("is-dragging");
+      e.preventDefault();
+    });
+
+    el.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var travel = e.shiftKey ? 900 : 200;
+      state.setNormalisedValue(clamp01(startNorm + (startY - e.clientY) / travel));
+      e.preventDefault();
+    });
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      el.classList.remove("is-dragging");
+      state.dragEnd();
+    }
+
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+
+    el.addEventListener("dblclick", function () {
+      state.setNormalisedValue((cfg.def - cfg.min) / (cfg.max - cfg.min));
+    });
+
+    el.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var step = (e.shiftKey ? 0.002 : 0.01) * (e.deltaY < 0 ? 1 : -1);
+      state.setNormalisedValue(clamp01(state.getNormalisedValue() + step));
+    }, { passive: false });
+
+    el.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 0.05 : 0.01;
+      var n = state.getNormalisedValue();
+
+      if (e.key === "ArrowUp" || e.key === "ArrowRight") n += step;
+      else if (e.key === "ArrowDown" || e.key === "ArrowLeft") n -= step;
+      else if (e.key === "Home") n = 0;
+      else if (e.key === "End") n = 1;
+      else return;
+
+      e.preventDefault();
+      state.setNormalisedValue(clamp01(n));
+    });
+  }
+
+  /* ---- bypass ------------------------------------------------------------- */
+  function setupBypass() {
+    var el = document.getElementById("ctl-bypass");
+    var plate = document.querySelector(".apc-plate");
+    if (!el || !plate) return;
+
+    var native = (NATIVE && Juce && typeof Juce.getToggleState === "function")
+      ? Juce.getToggleState("bypass")
+      : null;
+    var local = false;
+
+    function apply(v) {
+      var on = !!v;
+      el.setAttribute("aria-checked", on ? "true" : "false");
+      plate.classList.toggle("is-bypassed", on);
+    }
+
+    if (native) {
+      native.valueChangedEvent.addListener(function () { apply(native.getValue()); });
+      apply(native.getValue());
+    } else {
+      apply(local);
+    }
+
+    el.addEventListener("click", function () {
+      if (native) native.setValue(!native.getValue());
+      else { local = !local; apply(local); }
+    });
+  }
+
+  /* ---- VU meter ----------------------------------------------------------- */
+  function setupMeter() {
+    var well = document.getElementById("cv-meter");
+    if (!well) return;
+
+    var canvas = well.querySelector("canvas");
+    if (!canvas || !window.APC || typeof window.APC.fitCanvas !== "function") return;
+
+    var target = -1.5;   // approved v2 rest position (between -3 and 0)
+    var current = -1.5;
+    var started = performance.now();
+    var busy = false;
+
+    function paint(ctx, w, h) {
+      var st = getComputedStyle(document.documentElement);
+      var ink = st.getPropertyValue("--meter-ink").trim() || "#3b3327";
+      var face = st.getPropertyValue("--day-meter-face").trim() || "#efe4c8";
+      var accent = st.getPropertyValue("--meter-accent").trim() || "#b8862f";
+      var brand = st.getPropertyValue("--meter-brand").trim() || "VU";
+      var red = "#d9531e";
+
+      var cx = w / 2;
+      var cy = h * 0.90;
+      var R = Math.min(w * 0.46, h * 0.80);
+
+      function ang(db) { return Math.PI * (1.15 + 0.7 * (db + 20) / 23); }
+
+      var g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#f7f2e4");
+      g.addColorStop(1, face);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = ink;
+      ctx.fillStyle = ink;
+      ctx.lineWidth = R * 0.008;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, ang(-20), ang(3));
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = R * 0.02;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.90, ang(-7), ang(-1));
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.25;
+      ctx.strokeStyle = red;
+      ctx.lineWidth = R * 0.09;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.955, ang(0), ang(3));
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      var ticks = [-20, -15, -10, -7, -5, -3, -2, -1, 0, 1, 2, 3];
+      var major = { "-20": 1, "-10": 1, "-7": 1, "-3": 1, "0": 1, "3": 1 };
+
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = R * 0.012;
+      for (var i = 0; i < ticks.length; i++) {
+        var db = ticks[i];
+        var a = ang(db);
+        var c1 = Math.cos(a);
+        var s1 = Math.sin(a);
+        var r0 = major[String(db)] ? 0.86 : 0.91;
+        ctx.beginPath();
+        ctx.moveTo(cx + c1 * R * r0, cy + s1 * R * r0);
+        ctx.lineTo(cx + c1 * R, cy + s1 * R);
+        ctx.stroke();
+      }
+
+      var labels = [-20, -10, -7, -3, 0, 3];
+      ctx.font = "bold " + Math.round(R * 0.10) + "px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (var j = 0; j < labels.length; j++) {
+        var la = ang(labels[j]);
+        ctx.fillStyle = labels[j] >= 0 ? red : ink;
+        ctx.fillText(labels[j] > 0 ? "+" + labels[j] : "" + labels[j],
+                     cx + Math.cos(la) * R * 0.76,
+                     cy + Math.sin(la) * R * 0.76);
+      }
+
+      ctx.fillStyle = ink;
+      ctx.globalAlpha = 0.8;
+      ctx.font = "bold " + Math.round(R * 0.16) + "px sans-serif";
+      ctx.fillText(brand, cx, cy - R * 0.60);
+      ctx.font = Math.round(R * 0.072) + "px sans-serif";
+      ctx.fillText("CHANNEL VOCAL", cx, cy - R * 0.46);
+      ctx.globalAlpha = 1;
+
+      var na = ang(Math.max(-20, Math.min(3, current)));
+      ctx.strokeStyle = ink;
+      ctx.lineWidth = R * 0.018;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(na) * R * 0.68, cy + Math.sin(na) * R * 0.68);
+      ctx.stroke();
+
+      ctx.fillStyle = ink;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 0.055, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = red;
+      ctx.beginPath();
+      ctx.arc(w - R * 0.12, h * 0.10, R * 0.035, 0, Math.PI * 2);
+      ctx.fill();
+
+      var sh = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+      sh.addColorStop(0, "rgba(255,255,255,.28)");
+      sh.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = sh;
+      ctx.fillRect(0, 0, w, h * 0.5);
+    }
+
+    var fit = window.APC.fitCanvas(canvas, paint);
+
+    function poll() {
+      if (NATIVE) {
+        if (busy) return;
+        busy = true;
+        getMeter().then(function (m) {
+          var db = (m && typeof m.rmsDb === "number") ? m.rmsDb : -100;
+          target = Math.max(-20, Math.min(3, db + 18));
+        }).then(function () { busy = false; });
+      } else {
+        var t = (performance.now() - started) / 1000;
+        target = Math.max(-20, Math.min(3,
+          -8 + 5.2 * Math.sin(t * 1.1) + 2.2 * Math.sin(t * 3.7)));
+      }
+    }
+
+    function animate() {
+      current += (target - current) * (target > current ? 0.35 : 0.08);
+      fit.refit();
+    }
+
+    setInterval(poll, 33);
+    setInterval(animate, 33);
+    poll();
+    animate();
+  }
+
+  /* ---- boot --------------------------------------------------------------- */
+  function boot() {
+    setupKnob("drive");
+    setupKnob("tone");
+    setupKnob("mix");
+    setupBypass();
+    setupMeter();
+
+    var grip = document.getElementById("ctl-grip");
+    if (grip && window.APC && typeof window.APC.attachGrip === "function")
+      window.APC.attachGrip(grip);
+
+    // Sync the page with the native scale preference (no-op in a browser).
+    getUiPrefs().then(function (prefs) {
+      if (prefs && typeof prefs.uiScale === "number")
+        document.documentElement.setAttribute("data-ui-scale", String(prefs.uiScale));
+    });
+  }
+
+  boot();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "name": "VocalSat",
+  "layout": {
+    "mode": "scalable",
+    "plate": { "cols": 45, "rows": 30 },
+    "cell_px": 16,
+    "aspect_lock": true,
+    "scale_range": [0.5, 3.0],
+    "edge_policy": "letterbox",
+    "letterbox_fill": "--surface",
+    "resize_handle": "corner-gripper",
+    "presets": [0.5, 0.75, 1.0, 1.5, 2.0],
+    "breakpoints": []
+  },
+  "tokens": {
+    "--plate": "#2a2621",
+    "--plate-2": "#34302a",
+    "--surface": "#121010",
+    "--inset": "#0d0b09",
+    "--rule": "#5c5245",
+    "--rule-2": "#403930",
+    "--ink": "#f4e9d4",
+    "--ink-2": "#b9a888",
+    "--accent": "#ffb347",
+    "--grip-ink": "#6d5f4b",
+    "--font-ui": "\"Bahnschrift\", \"Segoe UI\", ui-sans-serif, sans-serif",
+    "--t-label": ".625rem",
+    "--t-value": ".75rem",
+    "--t-readout": ".8125rem",
+    "--t-micro": ".4375rem",
+    "--day-meter-face": "#efe4c8",
+    "--meter-ink": "#3b3327",
+    "--meter-accent": "#b8862f",
+    "--meter-brand": "VU"
+  },
+  "sections": [
+    { "id": "mast", "cell": { "x": 0.5, "y": 0.5, "w": 44, "h": 3.25 }, "title": "" },
+    { "id": "meter-bay", "cell": { "x": 1.5, "y": 4, "w": 22.5, "h": 13.5 }, "title": "METER" },
+    { "id": "notes", "cell": { "x": 1.5, "y": 18, "w": 22.5, "h": 6 }, "title": "CHARACTER" },
+    { "id": "controls", "cell": { "x": 24.75, "y": 4, "w": 19.75, "h": 20 }, "title": "SATURATION" },
+    { "id": "footer", "cell": { "x": 0.5, "y": 25.75, "w": 44, "h": 3.75 }, "title": "ANALOG WARMTH" }
+  ],
+  "controls": [
+    { "id": "brand", "component": "label", "label": "VOCALSAT", "cell": { "x": 2, "y": 1.25, "w": 16, "h": 1.75 } },
+    { "id": "tagline", "component": "label", "label": "ANALOG WARMTH", "cell": { "x": 27, "y": 1.25, "w": 16, "h": 1.75 } },
+
+    { "id": "drive", "param": "drive", "component": "knob", "label": "DRIVE", "cell": { "x": 25.5, "y": 6, "w": 6, "h": 6.5 } },
+    { "id": "tone", "param": "tone", "component": "knob", "label": "TONE", "cell": { "x": 32, "y": 6, "w": 6, "h": 6.5 } },
+    { "id": "mix", "param": "mix", "component": "knob", "label": "MIX", "cell": { "x": 38.5, "y": 6, "w": 6, "h": 6.5 } },
+
+    { "id": "drive-readout", "component": "screen", "value": "6.0 dB", "cell": { "x": 25.5, "y": 13.5, "w": 6, "h": 2.25 } },
+    { "id": "tone-readout", "component": "screen", "value": "0 %", "cell": { "x": 32, "y": 13.5, "w": 6, "h": 2.25 } },
+    { "id": "mix-readout", "component": "screen", "value": "100 %", "cell": { "x": 38.5, "y": 13.5, "w": 6, "h": 2.25 } },
+
+    { "id": "bypass", "component": "psw", "label": "BYPASS", "cell": { "x": 25.5, "y": 18, "w": 9, "h": 3 } },
+
+    { "id": "note-1", "component": "label", "label": "VOCAL-FIRST SATURATION", "cell": { "x": 3, "y": 19.5, "w": 19, "h": 1.25 } },
+    { "id": "note-2", "component": "label", "label": "AUTO GAIN COMPENSATION", "cell": { "x": 3, "y": 21.25, "w": 19, "h": 1.25 } },
+
+    { "id": "footer-left", "component": "label", "label": "4x OVERSAMPLING", "cell": { "x": 2.5, "y": 26.5, "w": 18, "h": 1.5 } },
+    { "id": "footer-right", "component": "label", "label": "VST3 / STANDALONE", "cell": { "x": 30, "y": 26.5, "w": 13, "h": 1.5 } }
+  ],
+  "canvases": [
+    { "id": "meter", "kind": "vu-meter", "label": "VOCAL", "cell": { "x": 3, "y": 5.5, "w": 20, "h": 10.5 } }
+  ],
+  "annotations": []
+}

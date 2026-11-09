@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocalSat — APC design preview</title>
+<link rel="stylesheet" href="apc-ui/apc-core.css">
+<link rel="stylesheet" href="apc-ui/apc-components.css">
+<style>
+:root {
+  --cols: 45;
+  --rows: 30;
+  --apc-letterbox: var(--surface);
+  --plate: #2a2621;
+  --plate-2: #34302a;
+  --surface: #121010;
+  --inset: #0d0b09;
+  --rule: #5c5245;
+  --rule-2: #403930;
+  --ink: #f4e9d4;
+  --ink-2: #b9a888;
+  --accent: #ffb347;
+  --grip-ink: #6d5f4b;
+  --font-ui: "Bahnschrift", "Segoe UI", ui-sans-serif, sans-serif;
+  --t-label: .5rem;
+  --t-value: .6875rem;
+  --t-readout: .75rem;
+  --t-micro: .4375rem;
+  --day-meter-face: #efe4c8;
+}
+
+</style>
+</head>
+<body>
+  <!-- composed from ui-map.json — do not hand-edit layout; edit the map -->
+<div class="apc-plate">
+    <div class="apc-cell apc-section" id="sec-mast" style="left:0.5rem;top:0.5rem;width:44rem;height:3.25rem;"><span class="apc-sec-tag">VOCALSAT · VOCAL SATURATOR</span></div>
+    <div class="apc-cell apc-section" id="sec-meter-bay" style="left:1.5rem;top:4rem;width:22.5rem;height:20rem;"><span class="apc-sec-tag">METER</span></div>
+    <div class="apc-cell apc-section" id="sec-controls" style="left:24.75rem;top:4rem;width:19.75rem;height:20rem;"><span class="apc-sec-tag">SATURATION</span></div>
+    <div class="apc-cell apc-section" id="sec-footer" style="left:0.5rem;top:25.75rem;width:44rem;height:3.75rem;"><span class="apc-sec-tag">ANALOG WARMTH</span></div>
+    <div class="apc-cell apc-well" id="cv-meter" style="left:3rem;top:5.5rem;width:20rem;height:17.5rem;"><canvas data-fit="fit_meter"></canvas></div>
+    <div class="apc-cell apc-ctl-label" id="ctl-brand" style="left:2rem;top:1.25rem;width:16rem;height:1.75rem;">VOCALSAT</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-tagline" style="left:27rem;top:1.25rem;width:16rem;height:1.75rem;">ANALOG WARMTH</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-meter-label" style="left:3rem;top:4.25rem;width:20rem;height:1rem;">VU METER</div>
+    <div class="apc-cell apc-knob" id="ctl-drive" data-param="drive" style="left:25.5rem;top:6.5rem;width:6rem;height:8.5rem;"><div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div><div class="apc-ctl-label">DRIVE</div></div>
+    <div class="apc-cell apc-knob" id="ctl-tone" data-param="tone" style="left:32rem;top:6.5rem;width:6rem;height:8.5rem;"><div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div><div class="apc-ctl-label">TONE</div></div>
+    <div class="apc-cell apc-knob" id="ctl-mix" data-param="mix" style="left:38.5rem;top:6.5rem;width:6rem;height:8.5rem;"><div class="apc-knob-dial"><div class="apc-knob-pointer"></div></div><div class="apc-ctl-label">MIX</div></div>
+    <div class="apc-cell apc-screen" id="ctl-drive-readout" style="left:25.5rem;top:15.75rem;width:6rem;height:2.25rem;">6.0 dB</div>
+    <div class="apc-cell apc-screen" id="ctl-tone-readout" style="left:32rem;top:15.75rem;width:6rem;height:2.25rem;">0 %</div>
+    <div class="apc-cell apc-screen" id="ctl-mix-readout" style="left:38.5rem;top:15.75rem;width:6rem;height:2.25rem;">100 %</div>
+    <button class="apc-cell apc-psw" id="ctl-bypass" aria-checked="false" style="left:25.5rem;top:20rem;width:9rem;height:3rem;"><span class="led"></span><span>BYPASS</span></button>
+    <div class="apc-cell apc-ctl-label" id="ctl-footer-left" style="left:2.5rem;top:26.5rem;width:18rem;height:1.5rem;">4x OVERSAMPLING</div>
+    <div class="apc-cell apc-ctl-label" id="ctl-footer-right" style="left:30rem;top:26.5rem;width:13rem;height:1.5rem;">VST3 / STANDALONE</div>
+    <div class="apc-grip" id="ctl-grip" title="Drag to resize"></div>
+</div>
+<script src="apc-ui/apc-fit.js"></script>
+<script>
+window.fit_meter = (function(label){ return function(ctx,w,h){
+    var st=getComputedStyle(document.documentElement);
+    var ink=st.getPropertyValue('--ink').trim()||'#28241d';
+    var face=st.getPropertyValue('--day-meter-face').trim()||'#f2ecdc';
+    var green=st.getPropertyValue('--accent').trim()||'#1f7a3d';
+    var red='#d9531e', cx=w/2, cy=h*0.97, R=Math.min(w*0.46,h*0.88);
+    var g=ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,'#f7f2e4'); g.addColorStop(1,face);
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    function ang(db){return Math.PI*(1.15+0.7*(db+20)/23);}
+    var ticks=[-20,-15,-10,-7,-5,-3,-2,-1,0,1,2,3];
+    ctx.strokeStyle=ink;ctx.fillStyle=ink;ctx.lineWidth=R*0.008;
+    ctx.beginPath();ctx.arc(cx,cy,R,ang(-20),ang(3));ctx.stroke();
+    ctx.globalAlpha=.5;ctx.lineWidth=R*0.02;
+    ctx.strokeStyle=green;ctx.beginPath();ctx.arc(cx,cy,R*0.90,ang(-7),ang(-1));ctx.stroke();
+    ctx.globalAlpha=.25;ctx.strokeStyle=red;ctx.lineWidth=R*0.09;
+    ctx.beginPath();ctx.arc(cx,cy,R*0.955,ang(0),ang(3));ctx.stroke();ctx.globalAlpha=1;
+    ctx.strokeStyle=ink;ctx.lineWidth=R*0.012;
+    ctx.font='bold '+Math.round(R*0.10)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var i=0;i<ticks.length;i++){var a=ang(ticks[i]),c1=Math.cos(a),s1=Math.sin(a);
+      var maj=(ticks[i]===-20||ticks[i]===-10||ticks[i]===-7||ticks[i]===0||ticks[i]===3);
+      ctx.beginPath();ctx.moveTo(cx+c1*R*(maj?0.86:0.91),cy+s1*R*(maj?0.86:0.91));
+      ctx.lineTo(cx+c1*R,cy+s1*R);ctx.stroke();
+      if(ticks[i]>-15&&ticks[i]<3&&ticks[i]%1===0){
+        ctx.fillStyle=ticks[i]>=0?red:ink;
+        ctx.fillText(ticks[i]>0?'+'+ticks[i]:''+ticks[i],cx+c1*R*0.74,cy+s1*R*0.74);}}
+    ctx.fillStyle=ink;ctx.globalAlpha=.8;
+    ctx.font='bold '+Math.round(R*0.16)+'px sans-serif';
+    ctx.fillText('NOIZEFIELD',cx,cy-R*0.52);
+    ctx.font=Math.round(R*0.075)+'px sans-serif';
+    ctx.fillText('CHANNEL '+(label||''),cx,cy-R*0.36);
+    ctx.globalAlpha=1;
+    ctx.strokeStyle=ink;ctx.lineWidth=R*0.018;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(ang(-3))*R*0.82,cy+Math.sin(ang(-3))*R*0.82);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(cx,cy,R*0.055,0,7);ctx.fill();
+    ctx.fillStyle=red;ctx.beginPath();ctx.arc(w-R*0.12,h*0.10,R*0.035,0,7);ctx.fill();
+    var sh=ctx.createLinearGradient(0,0,0,h*0.5);
+    sh.addColorStop(0,'rgba(255,255,255,.28)');sh.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=sh;ctx.fillRect(0,0,w,h*0.5);
+  }; })("VOCAL");
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.APC) APC.mountKit(document);
+  });
+</script>
+</body>
+</html>

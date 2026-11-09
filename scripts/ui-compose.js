@@ -116,15 +116,17 @@ function attrs(ctl, asBuilt) {
 const CANVAS_PAINTERS = {
   'vu-meter': `function(ctx,w,h){
     var st=getComputedStyle(document.documentElement);
-    var ink=st.getPropertyValue('--ink').trim()||'#28241d';
+    var ink=st.getPropertyValue('--meter-ink').trim()||st.getPropertyValue('--ink').trim()||'#28241d';
     var face=st.getPropertyValue('--day-meter-face').trim()||'#f2ecdc';
-    var green=st.getPropertyValue('--accent').trim()||'#1f7a3d';
-    var red='#d9531e', cx=w/2, cy=h*0.97, R=Math.min(w*0.46,h*0.88);
+    var green=st.getPropertyValue('--meter-accent').trim()||st.getPropertyValue('--accent').trim()||'#1f7a3d';
+    var brand=st.getPropertyValue('--meter-brand').trim()||'NOIZEFIELD';
+    var red='#d9531e', cx=w/2, cy=h*0.90, R=Math.min(w*0.46,h*0.80);
     var g=ctx.createLinearGradient(0,0,0,h);
     g.addColorStop(0,'#f7f2e4'); g.addColorStop(1,face);
     ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
     function ang(db){return Math.PI*(1.15+0.7*(db+20)/23);}
     var ticks=[-20,-15,-10,-7,-5,-3,-2,-1,0,1,2,3];
+    var labels=[-20,-10,-7,-3,0,3];
     ctx.strokeStyle=ink;ctx.fillStyle=ink;ctx.lineWidth=R*0.008;
     ctx.beginPath();ctx.arc(cx,cy,R,ang(-20),ang(3));ctx.stroke();
     ctx.globalAlpha=.5;ctx.lineWidth=R*0.02;
@@ -132,22 +134,22 @@ const CANVAS_PAINTERS = {
     ctx.globalAlpha=.25;ctx.strokeStyle=red;ctx.lineWidth=R*0.09;
     ctx.beginPath();ctx.arc(cx,cy,R*0.955,ang(0),ang(3));ctx.stroke();ctx.globalAlpha=1;
     ctx.strokeStyle=ink;ctx.lineWidth=R*0.012;
-    ctx.font='bold '+Math.round(R*0.10)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     for(var i=0;i<ticks.length;i++){var a=ang(ticks[i]),c1=Math.cos(a),s1=Math.sin(a);
-      var maj=(ticks[i]===-20||ticks[i]===-10||ticks[i]===-7||ticks[i]===0||ticks[i]===3);
+      var maj=(ticks[i]===-20||ticks[i]===-10||ticks[i]===-7||ticks[i]===-3||ticks[i]===0||ticks[i]===3);
       ctx.beginPath();ctx.moveTo(cx+c1*R*(maj?0.86:0.91),cy+s1*R*(maj?0.86:0.91));
-      ctx.lineTo(cx+c1*R,cy+s1*R);ctx.stroke();
-      if(ticks[i]>-15&&ticks[i]<3&&ticks[i]%1===0){
-        ctx.fillStyle=ticks[i]>=0?red:ink;
-        ctx.fillText(ticks[i]>0?'+'+ticks[i]:''+ticks[i],cx+c1*R*0.74,cy+s1*R*0.74);}}
+      ctx.lineTo(cx+c1*R,cy+s1*R);ctx.stroke();}
+    ctx.font='bold '+Math.round(R*0.10)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var j=0;j<labels.length;j++){var la=ang(labels[j]);
+      ctx.fillStyle=labels[j]>=0?red:ink;
+      ctx.fillText(labels[j]>0?'+'+labels[j]:''+labels[j],cx+Math.cos(la)*R*0.76,cy+Math.sin(la)*R*0.76);}
     ctx.fillStyle=ink;ctx.globalAlpha=.8;
     ctx.font='bold '+Math.round(R*0.16)+'px sans-serif';
-    ctx.fillText('NOIZEFIELD',cx,cy-R*0.52);
-    ctx.font=Math.round(R*0.075)+'px sans-serif';
-    ctx.fillText('CHANNEL '+(label||''),cx,cy-R*0.36);
+    ctx.fillText(brand,cx,cy-R*0.60);
+    ctx.font=Math.round(R*0.072)+'px sans-serif';
+    ctx.fillText('CHANNEL '+(label||''),cx,cy-R*0.46);
     ctx.globalAlpha=1;
     ctx.strokeStyle=ink;ctx.lineWidth=R*0.018;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(ang(-3))*R*0.82,cy+Math.sin(ang(-3))*R*0.82);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(ang(-1.5))*R*0.68,cy+Math.sin(ang(-1.5))*R*0.68);ctx.stroke();
     ctx.fillStyle=ink;ctx.beginPath();ctx.arc(cx,cy,R*0.055,0,7);ctx.fill();
     ctx.fillStyle=red;ctx.beginPath();ctx.arc(w-R*0.12,h*0.10,R*0.035,0,7);ctx.fill();
     var sh=ctx.createLinearGradient(0,0,0,h*0.5);
