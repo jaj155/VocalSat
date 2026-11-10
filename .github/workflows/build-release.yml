@@ -23,13 +23,13 @@ jobs:
         run: cmake --build build --config Release --target VocalSat_VST3 2>&1 | Tee-Object -FilePath build.log
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-logs
           path: build.log
       - name: Build Standalone
         run: cmake --build build --config Release --target VocalSat_Standalone
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-VocalSat
           path: build/*_artefacts/Release/*
@@ -46,13 +46,13 @@ jobs:
         run: cmake --build build --config Release --target VocalSat_VST3 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-logs
           path: build.log
       - name: Build Standalone
         run: cmake --build build --config Release --target VocalSat_Standalone
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos-VocalSat
           path: build/*_artefacts/Release/*
@@ -76,13 +76,13 @@ jobs:
         run: cmake --build build --target VocalSat_VST3 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-logs
           path: build.log
       - name: Build Standalone
         run: cmake --build build --target VocalSat_Standalone
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: linux-VocalSat
           path: build/*_artefacts/*
